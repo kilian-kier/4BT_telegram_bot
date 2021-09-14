@@ -39,7 +39,7 @@ def get_absence():
             for k in j['uebernahmen']:
                 if k['classroom'] == klasse:
                     ret.append(find_weekday(i['day']) + ' ' + i['day'] + ' : ' + k['hour'] + ". Stunde - " + k[
-                        'teacher'] + ' stott ' + j['missingTeacher'][4:])
+                        'teacher'] + ' stott ' + j['missingTeacher'])
     return ret
 
 
