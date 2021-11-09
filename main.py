@@ -50,7 +50,7 @@ def check_absence():
             if absence not in send:
                 bot.send_message(chat_id, absence)
                 send.append(absence)
-        time.sleep(2)
+        time.sleep(3600)
 
 
 @bot.route("/start")
