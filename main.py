@@ -12,6 +12,8 @@ headers = {'cookie': 'pass=fallmerayer'}
 klasse = "4BT"
 send = []
 chat_id = -1001207755479
+# chat_id = 1236246295
+last_update = ''
 
 
 def find_weekday(date):
@@ -29,27 +31,46 @@ def find_weekday(date):
     return ret
 
 
-def get_absence():
+def get_absence(s_class, check_last_update = True):
+    global last_update
     ret = []
     site = requests.get('https://www.fallmerayer.it/screen/parseToJson.php', headers=headers).content
     page = json.loads(site)
-    content = page['supplenzen']
-    for i in content:
-        for j in i['supplenzen']:
-            for k in j['uebernahmen']:
-                if k['classroom'] == klasse:
-                    ret.append(find_weekday(i['day']) + ' ' + i['day'] + ' : ' + k['hour'] + ". Stunde - " + k[
-                        'teacher'] + ' stott ' + j['missingTeacher'])
+    date = page['updateDate']
+    if date == last_update and check_last_update:
+        return ret
+    else:
+        last_update = date
+        content = page['supplenzen']
+        for i in content:
+            for j in i['supplenzen']:
+                for k in j['uebernahmen']:
+                    if k['classroom'] == s_class:
+                        ret.append({'str': find_weekday(i['day']) + ' ' + i['day'] + ' : ' + k['hour'] + ". Stunde - " + k[
+                            'teacher'] + ' stott ' + j['missingTeacher'], 'date': datetime.datetime.strptime(i['day'] + k['hour'], '%d.%m.%Y%H')})
     return ret
 
 
 def check_absence():
+    global send
     while True:
-        ret = get_absence()
+        now = datetime.datetime.now()
+        for s in send:
+            if now.date() > s['date'].date():
+                send.remove(s)
+            elif now.date() == s['date'].date():
+                bot.send_message(chat_id, s['str'])
+
+        ret = get_absence(klasse)
         for absence in ret:
-            if absence not in send:
-                bot.send_message(chat_id, absence)
-                send.append(absence)
+            if absence['date'] > now:
+                found = False
+                for s in send:
+                    if s['date'] == absence['date']:
+                        found = True
+                if not found:
+                    bot.send_message(chat_id, absence['str'])
+                    send.append(absence)
         time.sleep(3600)
 
 
@@ -73,7 +94,30 @@ def start(message, cmd: str):
         send.clear()
 
 
+@bot.route("/supplenz ?(.*)")
+@bot.route("/spulenz ?(.*)")
+def start(message, cmd: str):
+    global klasse
+    responseID = message['chat']['id']
+    if cmd == '':
+        ret = get_absence(klasse)
+    else:
+        cmd = cmd.upper()
+        ret = get_absence(cmd, False)
+    if ret != []:
+        for absence in ret:
+            bot.send_message(responseID, absence['str'])
+    else:
+        bot.send_message(responseID, 'Koane Supplenz')
+
+
 if __name__ == '__main__':
     bot.config["api_key"] = token
+    s = u'\U0001F618'
+    bot.send_message(chat_id, "Hallllllo capos und caporinen!\nIatz woll hon i a neues Update und iatz werds (hoffentliche) koane Bugs mehr geben\n\n"
+                              "Änderungen:\n- Supplenzen werdn olbm lei mehr überprüft, wenn sich wos geändert hot\n- Wenns a neue Supplenz gib werd se gschickt\n"
+                              "- wenns a Supplenz fürn heintigen tog gib, werd se noamol gschickt und donn nie wieder (hoffentlich)\n"
+                              "- mitn Befehlt /supplenz {Klasse} bzw. /spulenz {Klasse} werdn olle Supplenzen gschickt, de auf do Website für de Klasse gib. Werd koane Klasse ungeben werds für insre Klasse gschickt."
+                              "De Befehle funktionieren a im Privatchat mitn Bot" + s + s + s)
     _thread.start_new_thread(check_absence, ())
     bot.poll(debug=True)
