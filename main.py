@@ -113,11 +113,5 @@ def start(message, cmd: str):
 
 if __name__ == '__main__':
     bot.config["api_key"] = token
-    s = u'\U0001F618'
-    bot.send_message(chat_id, "Hallllllo capos und caporinen!\nIatz woll hon i a neues Update und iatz werds (hoffentliche) koane Bugs mehr geben\n\n"
-                              "Änderungen:\n- Supplenzen werdn olbm lei mehr überprüft, wenn sich wos geändert hot\n- Wenns a neue Supplenz gib werd se gschickt\n"
-                              "- wenns a Supplenz fürn heintigen tog gib, werd se noamol gschickt und donn nie wieder (hoffentlich)\n"
-                              "- mitn Befehlt /supplenz {Klasse} bzw. /spulenz {Klasse} werdn olle Supplenzen gschickt, de auf do Website für de Klasse gib. Werd koane Klasse ungeben werds für insre Klasse gschickt."
-                              "De Befehle funktionieren a im Privatchat mitn Bot" + s + s + s)
     _thread.start_new_thread(check_absence, ())
     bot.poll(debug=True)
