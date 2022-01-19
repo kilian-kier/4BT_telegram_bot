@@ -60,6 +60,7 @@ def check_absence():
                 send.remove(s)
             elif now.date() == s['date'].date():
                 bot.send_message(chat_id, s['str'])
+                send.remove(s)
 
         ret = get_absence(klasse)
         for absence in ret:
